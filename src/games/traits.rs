@@ -34,5 +34,5 @@ pub trait Game {
     /// 
     /// # Returns
     /// The DotScreen object which displays as the title screen.
-    fn title_screen(&self) -> DotScreen;
+    fn title_screen(&self) -> &'static DotScreen;
 }
