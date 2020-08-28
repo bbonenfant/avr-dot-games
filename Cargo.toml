@@ -8,16 +8,6 @@ edition = "2018"
 name = "dot_games"
 path = "src/lib.rs"
 
-[build]
-target = "avr-atmega328p.json"
-rustflags = "--target avr-atmega328p.json"
-
-[target."avr-atmega328p.json"]
-runner = "./flash.sh"
-
-[unstable]
-build-std = ["core"]
-
 [profile.dev]
 panic = "abort"
 lto = true

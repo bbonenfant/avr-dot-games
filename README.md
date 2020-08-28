@@ -27,7 +27,7 @@ The GPIO pins are hardcoded as the following:
 ## Development
 Building:
 ```bash
-cargo build -Z build-std=core --target avr-atmega328p.json --release
+cargo build --release
 ```
 
 Flashing to arduino: 
