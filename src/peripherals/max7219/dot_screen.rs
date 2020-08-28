@@ -19,7 +19,7 @@ impl DotScreen {
     pub const TOTAL_DOTS: usize = Self::HEIGHT * Self::WIDTH;
 
     /// Creates a new DotScreen object, from the columns provided.
-    pub fn new(columns: [u8; 8]) -> Self {
+    pub const fn new(columns: [u8; 8]) -> Self {
         DotScreen { columns }
     }
 

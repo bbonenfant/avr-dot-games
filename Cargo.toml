@@ -4,9 +4,13 @@ version = "0.1.0"
 authors = ["boggy"]
 edition = "2018"
 
+[bin]
+test = false
+
 [lib]
 name = "dot_games"
 path = "src/lib.rs"
+test = false
 
 [profile.dev]
 panic = "abort"

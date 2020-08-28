@@ -328,18 +328,20 @@ impl Game for SnakeGame {
     /// 
     /// # Returns
     /// The DotScreen object which displays as the title screen.
-    fn title_screen(&self) -> DotScreen {
-        DotScreen::new(
-            [
-                0b00000000,
-                0b00000000,
-                0b11011111,
-                0b10011001,
-                0b10011001,
-                0b11111011,
-                0b00000000,
-                0b00000000,
-            ]
-        )
+    fn title_screen(&self) -> &'static DotScreen {
+        const TITLE_SCREEN: DotScreen = 
+            DotScreen::new(
+                [
+                    0b00000000,
+                    0b00000000,
+                    0b11011111,
+                    0b10011001,
+                    0b10011001,
+                    0b11111011,
+                    0b00000000,
+                    0b00000000,
+                ]
+            );
+        &TITLE_SCREEN
     }
 }

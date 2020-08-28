@@ -53,7 +53,7 @@ impl SelectionScreen {
     }
 
     /// Pass through function to get the title screen DotScreen object for the current game.
-    fn current_title_screen(&mut self) -> DotScreen {
+    fn current_title_screen(&mut self) -> &DotScreen {
         self.games[self.index].mut_ref_game().title_screen()
     }
 
@@ -79,7 +79,7 @@ impl SelectionScreen {
     /// This consumes the SelectionScreen object, returning the selected DotGame object.
     /// This will endlessly loop, reacting to inputs from the JoyStick peripheral.
     pub fn run(mut self, components: &mut crate::Components) -> DotGame {
-        components.display.show(&self.current_title_screen());
+        components.display.show(self.current_title_screen());
         return loop {
             match components.joystick.poll_until_any() {
                 InputSignal::JoyStick(signal) => {
@@ -91,11 +91,11 @@ impl SelectionScreen {
                     match signal.to_single_direction() {
                         Some(Direction::Left) => { 
                             self.prev();
-                            components.display.show(&self.current_title_screen());
+                            components.display.show(self.current_title_screen());
                         }
                         Some(Direction::Right) => {
                             self.next();
-                            components.display.show(&self.current_title_screen());
+                            components.display.show(self.current_title_screen());
                         }
                         _ => {}
                     }
