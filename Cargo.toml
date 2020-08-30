@@ -4,8 +4,8 @@ version = "0.1.0"
 authors = ["boggy"]
 edition = "2018"
 
-[bin]
-test = false
+# [bin]
+# test = false
 
 [lib]
 name = "dot_games"
@@ -32,6 +32,7 @@ opt-level = 2
 arraydeque = { version = "0.4", default-features = false  }
 nb = "1.0"
 panic-halt = "0.2"
+rand_core = "0.5"
 ufmt = "0.1"
 
 [dependencies.arduino-uno]
