@@ -259,22 +259,25 @@ impl Game for SnakeGame {
             arduino_uno::delay_ms(400);
             components.display.show(&game_over_screen);
         }
-        
-        // Display the game score to the user by displaying a dot for each egg eaten,
-        //   one at a time, from left to right, top to bottom of the screen.
-        let score = core::cmp::max(self.get_score(), 1usize);
-        let tally = if score == VICTORY { DotScreen::TOTAL_DOTS } else { score };
-        let display = &mut components.display;
-        let delay = 3000 / (tally as u16);
-        DotScreen::new_empty()
-            .iter()
-            .take(tally)
-            .for_each(|dot| {
-                game_over_screen.add(&dot);
-                display.show(&game_over_screen);
-                arduino_uno::delay_ms(delay);
-            }
-        );
+
+        let score = self.get_score();
+        if score == 0 {
+            components.display.show(&self.screen);
+        } else {
+            // Display the game score to the user by displaying a dot for each egg eaten,
+            //   one at a time, from left to right, top to bottom of the screen.
+            let tally = if score == VICTORY { DotScreen::TOTAL_DOTS } else { score };
+            let delay = 3000 / (tally as u16);
+            DotScreen::new_empty()
+                .iter()
+                .take(tally)
+                .for_each(|dot| {
+                    game_over_screen.add(&dot);
+                    components.display.show(&game_over_screen);
+                    arduino_uno::delay_ms(delay);
+                }
+            );
+        }
         
         // Loop waiting for a JoyStick button press to end the game over screen.
         loop {
