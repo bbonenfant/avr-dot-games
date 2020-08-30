@@ -13,6 +13,8 @@ const SNAKE_START_Y: usize = DotScreen::WIDTH / 2;
 const START_LENGTH: usize = (DotScreen::WIDTH / 2) - 1;
 //   The initial polling interval for the SnakeGame.
 const INITIAL_POLL_INTERVAL: usize = 500;
+//   The number of point when the player has won the game (the screen is full).
+const VICTORY: usize = DotScreen::TOTAL_DOTS - START_LENGTH;
 
 /// A segment represents a segment of the Snake.
 /// 
@@ -217,6 +219,7 @@ impl SnakeGame {
                 self.screen.add(&self.snake.head.position);
             },
             SlitherResult::EggEaten => {
+                if self.get_score() == VICTORY { return false }
                 // Place a new egg in an open dot.
                 let index = {
                     let modulus = DotScreen::TOTAL_DOTS - self.snake.get_length();
@@ -259,11 +262,13 @@ impl Game for SnakeGame {
         
         // Display the game score to the user by displaying a dot for each egg eaten,
         //   one at a time, from left to right, top to bottom of the screen.
+        let score = core::cmp::max(self.get_score(), 1usize);
+        let tally = if score == VICTORY { DotScreen::TOTAL_DOTS } else { score };
         let display = &mut components.display;
-        let delay = 3000 / (self.get_score() as u16);
+        let delay = 3000 / (tally as u16);
         DotScreen::new_empty()
             .iter()
-            .take(self.get_score())
+            .take(tally)
             .for_each(|dot| {
                 game_over_screen.add(&dot);
                 display.show(&game_over_screen);
