@@ -81,7 +81,7 @@ impl SelectionScreen {
     pub fn run(mut self, components: &mut crate::Components) -> DotGame {
         components.display.show(self.current_title_screen());
         return loop {
-            match components.joystick.poll_until_any() {
+            match components.poll_joystick_until_any() {
                 InputSignal::JoyStick(signal) => {
 
                     // If the JoyStick button is pressed, return the selected DotGame.

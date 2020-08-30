@@ -23,6 +23,7 @@ The GPIO pins are hardcoded as the following:
 * JoyStick x-axis: A0
 * JoyStick y-axis: A1
 * JoyStick z-axis: A2
+* (Pseudo) RNG: A5 (Don't use this pin for anything. Leave it floating.)
 
 ## Development
 Building:
@@ -38,4 +39,9 @@ Flashing to arduino:
 Debugging using serial connection:
 ```bash
 screen /dev/ttyACM0
+```
+
+To stream raw data from the device (such as for testing the RNG):
+```bash
+(stty raw; cat > received.log) < /dev/<your_serial_port>
 ```

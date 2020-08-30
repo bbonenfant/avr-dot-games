@@ -55,8 +55,6 @@ pub struct JoyStick {
     y_axis: PC1<Analog>,
     // Digital pin that reads button presses.
     z_axis: Pin<Input<Floating>>,
-    // The analog-digital convertor object, used the read the analog pins.
-    adc: arduino_uno::adc::Adc
 }
 
 impl JoyStick {
@@ -68,9 +66,8 @@ impl JoyStick {
         x_axis: PC0<Analog>,
         y_axis: PC1<Analog>,
         z_axis: Pin<Input<Floating>>,
-        adc: Adc
     ) -> Self {
-        JoyStick { x_axis, y_axis, z_axis, adc }
+        JoyStick { x_axis, y_axis, z_axis }
     }
 }
 
@@ -79,11 +76,14 @@ impl InputDevice for JoyStick {
 
     /// Read the input data from the JoyStick Peripheral.
     /// 
+    /// # Arguments
+    /// * adc - The Analog-Digital convertor required to read analog data.
+    /// 
     /// # Returns
     /// Option<InputSignal::JoyStick>
-    fn read(&mut self) -> Option<InputSignal> {
-        let x: u16 = nb::block!(self.adc.read(&mut self.x_axis)).void_unwrap();
-        let y: u16 = nb::block!(self.adc.read(&mut self.y_axis)).void_unwrap();
+    fn read(&mut self, adc: &mut Adc) -> Option<InputSignal> {
+        let x: u16 = nb::block!(adc.read(&mut self.x_axis)).void_unwrap();
+        let y: u16 = nb::block!(adc.read(&mut self.y_axis)).void_unwrap();
         let z: bool = self.z_axis.is_low().void_unwrap();
         let signal = JoyStickSignal {
             horiz: (((x as i16) - Self::CENTER) / 4) as i8,

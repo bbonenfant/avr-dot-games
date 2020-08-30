@@ -187,9 +187,12 @@ impl SnakeGame {
     /// This is called for every game tick. This function will move the Snake
     ///   in the direction its Head is pointing, and then resolves the games state.
     /// 
+    /// # Arguments
+    /// * rng - The Random Number Generator.
+    /// 
     /// # Returns 
     /// Whether the game state was successfully updated.
-    fn update(&mut self) -> bool {
+    fn update(&mut self, rng: &mut dyn rand_core::RngCore) -> bool {
         match self.snake.slither(&self.egg) {
             SlitherResult::Moved(dropped_segment) => {
                 self.screen.remove(&dropped_segment.position);
@@ -197,7 +200,10 @@ impl SnakeGame {
             },
             SlitherResult::EggEaten => {
                 // Place a new egg in an open dot.
-                let index = self.get_random_index();
+                let index = {
+                    let modulus = DotScreen::TOTAL_DOTS - self.snake.get_length();
+                    (rng.next_u32() as usize) % modulus
+                };
                 self.egg = self.screen.iter_off().nth(index).unwrap();
                 self.screen.add(&self.egg);
 
@@ -210,14 +216,6 @@ impl SnakeGame {
             }
         }
         return true
-    }
-
-    /// This function uses the current state of the snake to generate a random
-    ///   number between 0 and the number of unlit dots on the screen.
-    fn get_random_index(&mut self) -> usize {
-        let last_dot = self.snake.tail.back().unwrap().position;
-        let modulus = DotScreen::TOTAL_DOTS - self.snake.get_length();
-        ((last_dot.x << 4) | last_dot.y) % modulus
     }
 
     /// Decrease the time between game ticks.
@@ -262,7 +260,7 @@ impl Game for SnakeGame {
         
         // Loop waiting for a JoyStick button press to end the game over screen.
         loop {
-            match components.joystick.poll_until_any() {
+            match components.poll_joystick_until_any() {
                 InputSignal::JoyStick(signal) => {
                     if let JoyStickSignal { button: true, .. } = signal { break }
                 }
@@ -284,7 +282,7 @@ impl Game for SnakeGame {
             // This interval gets shorter and shorter as more eggs are eaten,
             //   increasing the difficulty of the game.
             let signal = 
-                components.joystick.poll(self.polling_interval_ms).back();
+                components.poll_joystick(self.polling_interval_ms).back();
             if let Some(InputSignal::JoyStick(signal)) = signal {
                 if let Some(direction) = signal.to_single_direction() {
                     self.snake.set_direction(direction);
@@ -292,7 +290,7 @@ impl Game for SnakeGame {
             };
 
             // Update the game state. If unsuccessful, break out the game loop.
-            let update_successful = self.update();
+            let update_successful = self.update(components);
             if !update_successful { break }
 
             // Display the game state to the LED Dot Display.
