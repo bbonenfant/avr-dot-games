@@ -54,6 +54,15 @@ impl DotScreen {
         self.columns[dot.x] &= !(1 << (7 - dot.y));
     }
 
+    /// Toggle the on-off state of a dot.
+    pub fn toggle(&mut self, dot: &Dot) {
+        if self.is_dot_on(dot) {
+            self.remove(dot);
+        } else {
+            self.add(dot);
+        }
+    }
+
     /// Helper function used to determine if a particular dot LED is turned on.
     #[inline(always)]
     pub fn is_dot_on(&self, dot: &Dot) -> bool {
