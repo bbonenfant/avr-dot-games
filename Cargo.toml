@@ -4,8 +4,9 @@ version = "0.1.0"
 authors = ["boggy"]
 edition = "2018"
 
-# [bin]
-# test = false
+[[bin]]
+name = "dot_games"
+test = false
 
 [lib]
 name = "dot_games"

@@ -154,14 +154,14 @@ impl Snake {
 
 /// The SnakeGame object.
 pub struct SnakeGame {
-    // The Egg that the Snake is trying to eat.
+    /// The Egg that the Snake is trying to eat.
     egg: Dot,
-    // The character that the player controls.
+    /// The character that the player controls.
     snake: Snake,
-    // The screen depicting the current state of the game.
+    /// The screen depicting the current state of the game.
     screen: DotScreen,
-    // The interval to poll for user input.
-    // This can be interpreted as the time between game ticks.
+    /// The interval to poll for user input.
+    /// This can be interpreted as the time between game ticks.
     polling_interval_ms: usize,
 }
 
@@ -180,6 +180,24 @@ impl SnakeGame {
     /// Returns the current score for the game.
     pub fn get_score(&self) -> usize {
         self.snake.get_length() - START_LENGTH
+    }
+
+    /// Decrease the time between game ticks.
+    fn increase_speed(&mut self) {
+        self.polling_interval_ms -= self.polling_interval_ms / 50;
+    }
+
+    /// Briefly toggle the Dot representing the egg off and on.
+    /// 
+    /// This should help the player understand which Dot is the egg.
+    fn twinkle_egg(&mut self, display: &mut crate::peripherals::DotDisplay) {
+        const INTERVAL_MS: u16 = 24;
+
+        self.screen.remove(&self.egg);
+        display.show(&self.screen);
+        arduino_uno::delay_ms(INTERVAL_MS);
+        self.screen.add(&self.egg);
+        display.show(&self.screen);
     }
 
     /// Update the game state.
@@ -216,11 +234,6 @@ impl SnakeGame {
             }
         }
         return true
-    }
-
-    /// Decrease the time between game ticks.
-    fn increase_speed(&mut self) {
-        self.polling_interval_ms -= self.polling_interval_ms / 50;
     }
 }
 
@@ -260,7 +273,7 @@ impl Game for SnakeGame {
         
         // Loop waiting for a JoyStick button press to end the game over screen.
         loop {
-            match components.poll_joystick_until_any() {
+            match components.analog.poll_joystick_until_any() {
                 InputSignal::JoyStick(signal) => {
                     if let JoyStickSignal { button: true, .. } = signal { break }
                 }
@@ -277,12 +290,15 @@ impl Game for SnakeGame {
     /// * components - The peripheral components for the game display.
     fn play(&mut self, components: &mut Components) {
         loop {
+            // Improves the players comprehension of the game.
+            self.twinkle_egg(&mut components.display);
+
             // Gather user input, for the amount of milliseconds stored in the 
             //   `self.polling_interval_ms` attribute.
             // This interval gets shorter and shorter as more eggs are eaten,
             //   increasing the difficulty of the game.
             let signal = 
-                components.poll_joystick(self.polling_interval_ms).back();
+                components.analog.poll_joystick(self.polling_interval_ms).back();
             if let Some(InputSignal::JoyStick(signal)) = signal {
                 if let Some(direction) = signal.to_single_direction() {
                     self.snake.set_direction(direction);
@@ -290,7 +306,7 @@ impl Game for SnakeGame {
             };
 
             // Update the game state. If unsuccessful, break out the game loop.
-            let update_successful = self.update(components);
+            let update_successful = self.update(&mut components.analog);
             if !update_successful { break }
 
             // Display the game state to the LED Dot Display.
