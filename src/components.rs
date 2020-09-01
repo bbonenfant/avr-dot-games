@@ -12,34 +12,6 @@ pub struct AnalogDevices {
 
 impl AnalogDevices {
 
-    /// Construct a new AnalogDevices object.
-    pub fn new() -> Self {
-        // Steal the peripheral pins. This is "unsafe" but should be safe enough.
-        let dp = unsafe { arduino_uno::Peripherals::steal() };
-        let mut pins = arduino_uno::Pins::new(dp.PORTB, dp.PORTC, dp.PORTD);
-
-        let mut adc = {
-            let settings = arduino_uno::adc::AdcSettings::default();
-            arduino_uno::adc::Adc::new(dp.ADC, settings)
-        };
-
-        let joystick = {
-            let x_axis = pins.a0.into_analog_input(&mut adc);
-            let y_axis = pins.a1.into_analog_input(&mut adc);
-            let z_axis = pins.a2.into_floating_input(&mut pins.ddr).downgrade();
-            crate::peripherals::InputPeripheral::new(
-                crate::peripherals::JoyStick::new(x_axis, y_axis, z_axis)
-            )
-        };
-
-        let rng = {
-            let pin = pins.a5.into_analog_input(&mut adc);
-            crate::peripherals::XOrShiftPrng::new(pin, &mut adc)
-        };
-
-        AnalogDevices { adc, joystick, rng }
-    }
-
     /// Pass through function to the [InputPeripheral.poll](peripherals/struct.InputPeripheral.html#method.poll)
     ///   method with type parameter [Joystick](peripherals/struct.JoyStick).
     /// 
@@ -117,8 +89,29 @@ pub fn get_components() -> Components {
         arduino_uno::Serial::new(dp.USART0, rx, tx, BAUD_RATE)
     };
 
-    // Construct the analog devices, with ADC.
-    let analog = AnalogDevices::new();
+    // Construct the ADC.
+    let mut adc = {
+        let settings = arduino_uno::adc::AdcSettings::default();
+        arduino_uno::adc::Adc::new(dp.ADC, settings)
+    };
+
+    // Construct the JoyStick peripheral.
+    let joystick = {
+        let x_axis = pins.a0.into_analog_input(&mut adc);
+        let y_axis = pins.a1.into_analog_input(&mut adc);
+        let z_axis = pins.a2.into_floating_input(&mut pins.ddr).downgrade();
+        crate::peripherals::InputPeripheral::new(
+            crate::peripherals::JoyStick::new(x_axis, y_axis, z_axis)
+        )
+    };
+
+    // Construct the RNG.
+    let rng = {
+        let pin = pins.a5.into_analog_input(&mut adc);
+        crate::peripherals::XOrShiftPrng::new(pin, &mut adc)
+    };
+    
+    let analog = AnalogDevices { adc, joystick, rng };
 
     Components { analog, display, serial }
 }
