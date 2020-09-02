@@ -8,14 +8,9 @@ use dot_games::games::SelectionScreen;
 fn main() -> ! {
     let mut components = dot_games::get_components();
 
-    // Run the selection screen.
-    let mut selection = SelectionScreen::new().run(&mut components);
-    let game = selection.mut_ref_game();
+    // Run the Selection Screen.
+    let selected_game_loop = SelectionScreen::new().run(&mut components);
 
-    // Enter the game loop.
-    loop {
-        game.play(&mut components);
-        game.game_over(&mut components);
-        game.reset();
-    }
+    // Run the Game Loop.
+    selected_game_loop(components)
 }
